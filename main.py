@@ -1,13 +1,16 @@
 from datetime import datetime
+import json
+import os
 from pathlib import Path
 
 import requests
 import pandas as pd
 
 
+
 # Config
-API_KEY = "b54bcf4d-1bca-4e8e-9a24-22ff2c3d462c"  #  Sandbox api key
-API_URL = "https://sandbox-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"  #  Sandbox listings
+API_KEY = json.load(open('secrets.json', 'r'))["api_key"]
+API_URL = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"
 HEADERS = {
     "Accepts": "application/json",
     "X-CMC_PRO_API_KEY": API_KEY,
