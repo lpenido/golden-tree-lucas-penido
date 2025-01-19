@@ -57,5 +57,18 @@ def get_coin_universe():
     except requests.exceptions.HTTPError as e:
         print(f"Request failed: {e}")
 
+# Part 2: Read coins_to_track.csv and get pricing data for each coin. Store the pricing data in a
+# csv. Each time your process runs a new csv should be generated and a timestamp
+# should be appended to the file name.
+#       a. When you load the data, add a “LoadedWhen” column with the current date time.
+#       b . When you load the data, add an “IsTopCurrency” column that is true when the
+#       cmc_rank is less than or equal to 10, false otherwise.
+def get_pricing_data():
+    """Get and store pricing data for coins."""
+    coins_to_track = pd.read_csv(COINS_TO_TRACK_FILE)
+    coin_ids = coins_to_track['Symbol'].tolist()
+    print(coin_ids)
+
+
 if __name__ == "__main__":
-    get_coin_universe()
+    get_pricing_data()
