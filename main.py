@@ -91,7 +91,7 @@ def get_pricing_data():
     )
 
     df_pricing.to_csv(
-        PRICING_DATA_DIR / f"pricing_data__{process_runtime}", index=False
+        PRICING_DATA_DIR / f"pricing_data__{process_runtime}.csv", index=False
     )
 
     print(f"Coin pricing saved to {PRICING_DATA_DIR}")
