@@ -27,7 +27,7 @@ PRICING_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
 # Part 1: Store the entire universe of coins in a csv. This is for security data or coin level data.
-def get_coin_universe():
+def get_coin_universe(save_path: Path):
     """Get the universe of coins from CoinMarketCap."""
     response = requests.get(API_URL, headers=HEADERS)
     try:
@@ -63,8 +63,8 @@ def get_coin_universe():
             coin["percent_change_24h"] = coin["quote"]["USD"]["percent_change_24h"]
 
         df_universe = pd.DataFrame(universe)
-        df_universe.to_csv(UNIVERSE_FILE, index=False)
-        print(f"Coin universe saved to {UNIVERSE_FILE}")
+        df_universe.to_csv(save_path, index=False)
+        print(f"Coin universe saved to {save_path}")
     except requests.exceptions.HTTPError as e:
         print(f"Request failed: {e}")
 
@@ -177,7 +177,7 @@ def calculate_average_difference() -> pd.DataFrame:
 
 def run_process():
     """A wrapper to call all steps in the tracking process"""
-    get_coin_universe()
+    get_coin_universe(UNIVERSE_FILE)
     get_pricing_data()
     analyze_bitcoin_relationship()
     calculate_average_difference()
