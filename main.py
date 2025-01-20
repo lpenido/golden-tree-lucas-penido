@@ -87,6 +87,40 @@ def get_pricing_data():
     print(f"Coin pricing saved to {PRICING_DATA_DIR}")
 
 
+# Part 3: You should use the data you’ve loaded to produce a csv that tracks the relationship
+# between bitcoin and the coins we are analyzing. The csv should have these columns:
+#       a. Timestamp of the analysis.
+#       b. The difference in 24H percent change between bitcoin and the currency we’re
+#          evaluating.
+#       c. Sorted from smallest difference to largest.
+def get_most_recent_file(dir_path: Path) -> Path:
+    """Helper function to get most recent csv in pricing dir."""
+    dir_csvs = sorted(dir_path.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True) # reverse = True is DESC
+    return dir_csvs[0]
+
+
+def analyze_bitcoin_relationship():
+    """Analyze the relationship between bitcoin and other coins."""
+    pricing_data = get_most_recent_file(PRICING_DATA_DIR)
+    df_pricing = pd.read_csv(pricing_data)
+    bitcoin_data = df_pricing[df_pricing['symbol'] == 'BTC']
+    
+    bitcoin_change = bitcoin_data.iloc[0]['percent_change_24h']
+    results = []
+    for _, row in df_pricing.iterrows():
+        if row['symbol'] != 'BTC':
+            diff = abs(row['percent_change_24h'] - bitcoin_change)
+            results.append({
+                'timestamp': datetime.now().isoformat(),
+                'symbol': row['symbol'],
+                'name': row['name'],
+                'percent_change_diff': diff
+            })
+
+    df_results = pd.DataFrame(results).sort_values(by='percent_change_diff')
+    df_results.to_csv(ANALYSIS_FILE, index=False)
+    print(f"Bitcoin relationship analysis saved to {ANALYSIS_FILE}")
+
 if __name__ == "__main__":
     get_coin_universe()
     get_pricing_data()
