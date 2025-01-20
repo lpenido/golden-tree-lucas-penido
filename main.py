@@ -75,19 +75,14 @@ def get_pricing_data():
     """Get and store pricing data for coins."""
     coins_to_track = pd.read_csv(COINS_TO_TRACK_FILE)
     coin_ids = coins_to_track['Symbol'].tolist()
-        
-    for coin_id in coin_ids:
-        process_runtime = datetime.now().isoformat()
 
-        coin_dir = PRICING_DATA_DIR / f"{coin_id}"
-        coin_dir.mkdir(parents=True, exist_ok=True) # Make sure directories exist
-        
-        df_universe = pd.read_csv(UNIVERSE_FILE)
-        df_pricing = df_universe[(df_universe["symbol"] == coin_id)].copy()
-        df_pricing["LoadedWhen"] = process_runtime
-        df_pricing["IsTopCurrency"] = df_pricing["cmc_rank"].apply(lambda cmc_rank: cmc_rank <= 10)
+    process_runtime = datetime.now().isoformat()
+    df_universe = pd.read_csv(UNIVERSE_FILE)
+    df_pricing = df_universe[(df_universe['symbol'].isin(coin_ids)) | (df_universe['symbol'] == 'BTC')].copy() # to make sure BTC is always included
+    df_pricing["LoadedWhen"] = process_runtime
+    df_pricing["IsTopCurrency"] = df_pricing["cmc_rank"].apply(lambda cmc_rank: cmc_rank <= 10)
 
-        df_pricing.to_csv(coin_dir / f"{coin_id}__{process_runtime}", index=False)
+    df_pricing.to_csv(PRICING_DATA_DIR / f"pricing_data__{process_runtime}", index=False)
     
     print(f"Coin pricing saved to {PRICING_DATA_DIR}")
 
