@@ -54,11 +54,16 @@ def get_coin_universe():
             "quote": coin["quote"],
         } for coin in data]
 
+        # Adding percent_change_24h from quotes
+        for coin in universe:
+            coin["percent_change_24h"] = coin["quote"]["USD"]["percent_change_24h"]
+
         df_universe = pd.DataFrame(universe)
         df_universe.to_csv(UNIVERSE_FILE, index=False)
         print(f"Coin universe saved to {UNIVERSE_FILE}")
     except requests.exceptions.HTTPError as e:
         print(f"Request failed: {e}")
+
 
 # Part 2: Read coins_to_track.csv and get pricing data for each coin. Store the pricing data in a
 # csv. Each time your process runs a new csv should be generated and a timestamp
@@ -70,8 +75,23 @@ def get_pricing_data():
     """Get and store pricing data for coins."""
     coins_to_track = pd.read_csv(COINS_TO_TRACK_FILE)
     coin_ids = coins_to_track['Symbol'].tolist()
-    print(coin_ids)
+        
+    for coin_id in coin_ids:
+        process_runtime = datetime.now().isoformat()
+
+        coin_dir = PRICING_DATA_DIR / f"{coin_id}"
+        coin_dir.mkdir(parents=True, exist_ok=True) # Make sure directories exist
+        
+        df_universe = pd.read_csv(UNIVERSE_FILE)
+        df_pricing = df_universe[(df_universe["symbol"] == coin_id)].copy()
+        df_pricing["LoadedWhen"] = process_runtime
+        df_pricing["IsTopCurrency"] = df_pricing["cmc_rank"].apply(lambda cmc_rank: cmc_rank <= 10)
+
+        df_pricing.to_csv(coin_dir / f"{coin_id}__{process_runtime}", index=False)
+    
+    print(f"Coin pricing saved to {PRICING_DATA_DIR}")
 
 
 if __name__ == "__main__":
+    get_coin_universe()
     get_pricing_data()
