@@ -7,7 +7,9 @@ import pandas as pd
 
 from crypto_tracker import (
     get_coin_universe,
+    get_coins_to_track,
     PRICING_DATA_DIR,
+    COINS_TO_TRACK_FILE     
 )
 
 

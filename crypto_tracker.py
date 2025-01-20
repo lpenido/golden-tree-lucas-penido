@@ -16,9 +16,10 @@ HEADERS = {
 }
 
 # File paths
-COINS_TO_TRACK_FILE = "coins_to_track.csv"
+ROOT_DIR = Path(__file__).parent
+COINS_TO_TRACK_FILE = ROOT_DIR / "coins_to_track.csv"
 UNIVERSE_FILE = "coin_universe.csv"
-PRICING_DATA_DIR = Path(__file__).parent / "pricing_data/"
+PRICING_DATA_DIR = ROOT_DIR / "pricing_data/"
 ANALYSIS_FILE = "bitcoin_relationship.csv"
 
 
@@ -78,7 +79,8 @@ def get_coin_universe(save_path: Path):
 def get_coins_to_track() -> list:
     """Helper function to get all the coin symbols of interest."""
     coins_to_track = pd.read_csv(COINS_TO_TRACK_FILE)
-    coins_to_track["Symbol"].tolist()
+    coins_to_track = coins_to_track["Symbol"].tolist()
+    print(type(coins_to_track))
     return coins_to_track
 
 
