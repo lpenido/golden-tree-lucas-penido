@@ -75,10 +75,15 @@ def get_coin_universe():
 #       a. When you load the data, add a “LoadedWhen” column with the current date time.
 #       b . When you load the data, add an “IsTopCurrency” column that is true when the
 #       cmc_rank is less than or equal to 10, false otherwise.
+def get_coins_to_track() -> list:
+    """Helper function to get all the coin symbols of interest."""
+    coins_to_track = pd.read_csv(COINS_TO_TRACK_FILE)
+    coins_to_track["Symbol"].tolist()
+    return coins_to_track
+
 def get_pricing_data():
     """Get and store pricing data for coins."""
-    coins_to_track = pd.read_csv(COINS_TO_TRACK_FILE)
-    coin_ids = coins_to_track["Symbol"].tolist()
+    coin_ids = get_coins_to_track()
 
     process_runtime = datetime.now().isoformat()
     df_universe = pd.read_csv(UNIVERSE_FILE)
