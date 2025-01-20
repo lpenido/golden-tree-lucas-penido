@@ -29,3 +29,20 @@ def mock_universe_file():
 def test_pricing_data_directory():
     """The directory for pricing data should exist"""
     assert PRICING_DATA_DIR.exists() == True
+
+
+@patch("crypto_tracker.requests.get")
+def test_get_coin_universe(mock_get, mock_coin_universe_response, mock_universe_file):
+    """Testing the schema saves"""
+    mock_get.return_value = Mock(status_code=200, json=lambda: mock_coin_universe_response)
+
+    get_coin_universe(mock_universe_file)
+
+    assert mock_universe_file.exists() == True
+    df = pd.read_csv(mock_universe_file)
+    assert len(df) == 2
+    primary_columns = ["name", "symbol", "percent_change_24h"]
+    assert all(col in df.columns for col in primary_columns)
+    assert "BTC" in df["symbol"].values
+    assert "ETH" in df["symbol"].values
+    
