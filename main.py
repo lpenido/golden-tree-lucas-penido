@@ -141,6 +141,35 @@ def analyze_bitcoin_relationship():
     print(f"Bitcoin relationship analysis saved to {ANALYSIS_FILE}")
 
 
+# Part 4: Write a python function to output the average 24H percent change vs bitcoin for each
+# currency over each run by parsing through the files you’ve generated.
+def get_pricing_files() -> list:
+    """Helper function in case sourcing for pricing data ever needs to change."""
+    return PRICING_DATA_DIR.glob("*.csv")
+
+def calculate_average_difference() -> pd.DataFrame:
+    """Calculate the average 24H percent change difference vs. bitcoin."""
+    pricing_files = get_pricing_files()
+    all_data = pd.concat((pd.read_csv(f) for f in pricing_files))
+    bitcoin_data = all_data[all_data["symbol"] == "BTC"]
+    
+    bitcoin_change = bitcoin_data["percent_change_24h"].mean()
+    averages = []
+
+    for symbol in all_data["symbol"].unique():
+        if symbol != "BTC":
+            symbol_data = all_data[all_data["symbol"] == symbol]
+            avg_change = symbol_data["percent_change_24h"].mean()
+            averages.append({
+                "symbol": symbol,
+                "average_diff_vs_bitcoin": avg_change - bitcoin_change
+            })
+
+    # Cutting down output to only tracked coins
+    df_averages = pd.DataFrame(averages)
+    print(df_averages)
+    return df_averages
+
 if __name__ == "__main__":
     get_coin_universe()
     get_pricing_data()
