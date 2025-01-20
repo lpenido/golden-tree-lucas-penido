@@ -47,4 +47,9 @@ def test_get_coin_universe(mock_get, mock_coin_universe_response, mock_universe_
     assert all(col in df.columns for col in primary_columns)
     assert "BTC" in df["symbol"].values
     assert "ETH" in df["symbol"].values
-    
+
+def test_get_coins_to_track():
+    """Making sure the file to track coins exists and has at least BTC in it"""
+    coins_to_track = get_coins_to_track()
+    assert len(coins_to_track) > 0
+    assert "BTC" in coins_to_track
