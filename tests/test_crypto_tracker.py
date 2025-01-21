@@ -11,6 +11,7 @@ from crypto_tracker import (
     get_coins_to_track,
     is_top_currency,
     get_pricing_data,
+    analyze_bitcoin_relationship,
     PRICING_DATA_DIR,
     COINS_TO_TRACK_FILE,
 )
@@ -208,7 +209,39 @@ def mock_pricing_data_dir():
     test_pricing_data_dir = Path("test_pricing_data")
     test_pricing_data_dir.mkdir(parents=True, exist_ok=True)
     yield test_pricing_data_dir
-    shutil.rmtree(test_pricing_data_dir) # test_pricing_data_dir.rmdir()
+    shutil.rmtree(test_pricing_data_dir)  # test_pricing_data_dir.rmdir()
+
+
+@pytest.fixture
+def mock_df_pricing():
+    test_df_pricing = pd.DataFrame(
+        [
+            {
+                "symbol": "BTC",
+                "name": "Bitcoin",
+                "cmc_rank": 1,
+                "percent_change_24h": 0.69860286,
+                "LoadedWhen": "2025-01-20T11:53:13.706530",
+                "IsTopCurrency": True,
+            },
+            {
+                "symbol": "ETH",
+                "name": "Ethereum",
+                "cmc_rank": 2,
+                "percent_change_24h": 2.58135749,
+                "LoadedWhen": "2025-01-20T11:53:13.706530",
+                "IsTopCurrency": True,
+            },
+        ]
+    )
+    yield test_df_pricing
+
+
+@pytest.fixture
+def mock_analysis_save_path():
+    test_analysis_save_path = Path("bitcoin_relationship.csv")
+    yield test_analysis_save_path
+    test_analysis_save_path.unlink(missing_ok=True)
 
 
 def test_pricing_data_directory():
@@ -259,3 +292,16 @@ def test_get_pricing_data(mock_df_universe, mock_pricing_data_dir):
 
     pricing_data_dir_contents = list(mock_pricing_data_dir.glob("*.csv"))
     assert len(pricing_data_dir_contents) > 0
+
+
+def test_analyze_bitcoin_relationship(
+    mock_df_pricing, mock_pricing_data_dir, mock_analysis_save_path
+):
+    """Making sure BTC isn't reported as a benchmark against itself, that analysis column exists, analysis is correct, and file is made"""
+    df_results = analyze_bitcoin_relationship(mock_df_pricing, mock_analysis_save_path)
+    
+    assert "BTC" not in df_results["symbol"].unique()
+    assert "percent_change_diff" in df_results.columns
+    assert round(df_results["percent_change_diff"].iloc[0], 2) == 1.88
+    assert mock_analysis_save_path.exists() == True
+    print(df_results)
