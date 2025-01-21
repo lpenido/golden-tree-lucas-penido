@@ -12,6 +12,8 @@ from crypto_tracker import (
     is_top_currency,
     get_pricing_data,
     analyze_bitcoin_relationship,
+    get_pricing_dfs,
+    calculate_average_difference,
     PRICING_DATA_DIR,
     COINS_TO_TRACK_FILE,
 )
@@ -209,8 +211,47 @@ def mock_pricing_data_dir():
     test_pricing_data_dir = Path("test_pricing_data")
     test_pricing_data_dir.mkdir(parents=True, exist_ok=True)
     yield test_pricing_data_dir
-    shutil.rmtree(test_pricing_data_dir)  # test_pricing_data_dir.rmdir()
+    shutil.rmtree(test_pricing_data_dir)
 
+
+@pytest.fixture
+def mock_pricing_data_dir_populated():
+    test_pricing_data_dir = Path("test_pricing_data")
+    test_pricing_data_dir.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(
+        [
+            {
+                "symbol": "BTC",
+                "name": "Bitcoin",
+                "cmc_rank": 1,
+                "percent_change_24h": 10,
+            },
+            {
+                "symbol": "ETH",
+                "name": "Ethereum",
+                "cmc_rank": 2,
+                "percent_change_24h": 20,
+            },
+        ]
+    ).to_csv(test_pricing_data_dir / "test_pricing_older.csv", index=False)
+    pd.DataFrame(
+        [
+            {
+                "symbol": "BTC",
+                "name": "Bitcoin",
+                "cmc_rank": 1,
+                "percent_change_24h": 10,
+            },
+            {
+                "symbol": "ETH",
+                "name": "Ethereum",
+                "cmc_rank": 2,
+                "percent_change_24h": 30,
+            },
+        ]
+    ).to_csv(test_pricing_data_dir / "test_pricing_newer.csv", index=False)
+    yield test_pricing_data_dir
+    shutil.rmtree(test_pricing_data_dir)
 
 @pytest.fixture
 def mock_df_pricing():
@@ -304,4 +345,15 @@ def test_analyze_bitcoin_relationship(
     assert "percent_change_diff" in df_results.columns
     assert round(df_results["percent_change_diff"].iloc[0], 2) == 1.88
     assert mock_analysis_save_path.exists() == True
-    print(df_results)
+
+
+def test_get_pricing_dfs(mock_pricing_data_dir_populated):
+    """Check if function can read csvs from directory into a list"""
+    dfs = get_pricing_dfs(mock_pricing_data_dir_populated)
+    assert len(dfs) == 2
+
+def test_calculate_average_difference(mock_pricing_data_dir_populated):
+    """Checking if function will take list, return df, and do the proper math"""
+    dfs_pricing = get_pricing_dfs(mock_pricing_data_dir_populated)
+    df_average = calculate_average_difference(dfs_pricing)
+    assert df_average["average_diff_vs_bitcoin"].iloc[0] == 15
