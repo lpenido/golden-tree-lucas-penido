@@ -232,7 +232,7 @@ def test_is_top_currency():
 
 
 def test_get_pricing_data(mock_universe_file, mock_pricing_data_dir):
-    """Making sure a file gets saved to the directory"""
+    """Making sure pricing is the right content, type, and columns and that a file gets saved to the directory"""
     df_pricing = get_pricing_data(mock_universe_file, mock_pricing_data_dir)
     assert df_pricing.empty == False
     assert "LoadedWhen" in df_pricing.columns

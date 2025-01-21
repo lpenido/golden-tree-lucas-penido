@@ -88,6 +88,7 @@ def get_coins_to_track() -> list:
     return coins_to_track
 
 def is_top_currency(cmc_rank: int) -> bool:
+    """Helper function to rank top currencies to track."""
     return cmc_rank <= 10
 
 def get_pricing_data(universe_file: Path, save_dir: Path) -> pd.DataFrame:
