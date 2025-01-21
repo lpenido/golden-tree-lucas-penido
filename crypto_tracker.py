@@ -80,6 +80,8 @@ def get_coins_to_track() -> list:
     coins_to_track = coins_to_track["Symbol"].tolist()
     return coins_to_track
 
+def is_top_currency(cmc_rank: int) -> bool:
+    return cmc_rank <= 10
 
 def get_pricing_data(universe_file: Path, save_dir: Path):
     """Get and store pricing data for coins."""
@@ -91,9 +93,7 @@ def get_pricing_data(universe_file: Path, save_dir: Path):
         (df_universe["symbol"].isin(coin_ids)) | (df_universe["symbol"] == "BTC")
     ].copy()  # to make sure BTC is always included
     df_pricing["LoadedWhen"] = process_runtime
-    df_pricing["IsTopCurrency"] = df_pricing["cmc_rank"].apply(
-        lambda cmc_rank: cmc_rank <= 10
-    )
+    df_pricing["IsTopCurrency"] = df_pricing["cmc_rank"].map(is_top_currency)
 
     df_pricing.to_csv(
         save_dir / f"pricing_data__{process_runtime}.csv", index=False
