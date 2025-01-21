@@ -178,13 +178,30 @@ def mock_coin_universe_response():
 @pytest.fixture
 def mock_universe_file():
     test_universe_file = Path("test_coin_universe.csv")
-    df = pd.DataFrame(
-        {"symbol": "BTC", "cmc_rank": "1", "percent_change_24h": 0.69860286},
-        {"symbol": "ETH", "cmc_rank": "2", "percent_change_24h": 2.58135749},
-    )
-    df.to_csv(test_universe_file, index=False)
     yield test_universe_file
     test_universe_file.unlink(missing_ok=True)
+
+
+@pytest.fixture
+def mock_df_universe():
+    test_df_universe = pd.DataFrame(
+        [
+            {
+                "symbol": "BTC",
+                "name": "Bitcoin",
+                "cmc_rank": 1,
+                "percent_change_24h": 0.69860286,
+            },
+            {
+                "symbol": "ETH",
+                "name": "Ethereum",
+                "cmc_rank": 2,
+                "percent_change_24h": 2.58135749,
+            },
+        ]
+    )
+    yield test_df_universe
+
 
 @pytest.fixture
 def mock_pricing_data_dir():
@@ -231,12 +248,14 @@ def test_is_top_currency():
     assert is_top_currency(11) == False
 
 
-def test_get_pricing_data(mock_universe_file, mock_pricing_data_dir):
+def test_get_pricing_data(mock_df_universe, mock_pricing_data_dir):
     """Making sure pricing is the right content, type, and columns and that a file gets saved to the directory"""
-    df_pricing = get_pricing_data(mock_universe_file, mock_pricing_data_dir)
+    df_pricing = get_pricing_data(mock_df_universe, mock_pricing_data_dir)
+
     assert df_pricing.empty == False
     assert "LoadedWhen" in df_pricing.columns
     assert "IsTopCurrency" in df_pricing.columns
+    assert "ETH" in df_pricing["symbol"].unique()
 
     pricing_data_dir_contents = list(mock_pricing_data_dir.glob("*.csv"))
     assert len(pricing_data_dir_contents) > 0
