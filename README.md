@@ -20,8 +20,8 @@ This project is a Python-based cryptocurrency price tracker that integrates with
 
 1. Clone the repository:
    ```bash
-   git clone <repository_url>
-   cd <repository_directory>
+   git clone git@github.com:lpenido/golden-tree-lucas-penido.git
+   cd golden-tree-lucas-penido
    ```
 
 2. Install dependencies using Poetry:
