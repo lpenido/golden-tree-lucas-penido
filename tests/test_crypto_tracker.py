@@ -1,4 +1,5 @@
 from pathlib import Path
+import shutil
 import os
 from unittest.mock import patch, Mock
 
@@ -176,8 +177,20 @@ def mock_coin_universe_response():
 @pytest.fixture
 def mock_universe_file():
     test_universe_file = Path("test_coin_universe.csv")
+    df = pd.DataFrame(
+        {"symbol": "BTC", "cmc_rank": "1", "percent_change_24h": 0.69860286},
+        {"symbol": "ETH", "cmc_rank": "2", "percent_change_24h": 2.58135749},
+    )
+    df.to_csv(test_universe_file, index=False)
     yield test_universe_file
     test_universe_file.unlink(missing_ok=True)
+
+@pytest.fixture
+def mock_pricing_data_dir():
+    test_pricing_data_dir = Path("test_pricing_data")
+    test_pricing_data_dir.mkdir(parents=True, exist_ok=True)
+    yield test_pricing_data_dir
+    shutil.rmtree(test_pricing_data_dir) # test_pricing_data_dir.rmdir()
 
 
 def test_pricing_data_directory():
@@ -208,3 +221,9 @@ def test_get_coins_to_track():
     coins_to_track = get_coins_to_track()
     assert len(coins_to_track) > 0
     assert "BTC" in coins_to_track
+
+
+def test_get_pricing_data(mock_universe_file, mock_pricing_data_dir):
+    get_pricing_data(mock_universe_file, mock_pricing_data_dir)
+    pricing_data_dir_contents = list(mock_pricing_data_dir.glob("*.csv"))
+    assert len(pricing_data_dir_contents) > 0
