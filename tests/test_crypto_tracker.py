@@ -9,6 +9,7 @@ import pandas as pd
 from crypto_tracker import (
     get_coin_universe,
     get_coins_to_track,
+    is_top_currency,
     get_pricing_data,
     PRICING_DATA_DIR,
     COINS_TO_TRACK_FILE,
@@ -223,7 +224,19 @@ def test_get_coins_to_track():
     assert "BTC" in coins_to_track
 
 
+def test_is_top_currency():
+    """Testing if helper can tell Top 10"""
+    assert is_top_currency(1) == True
+    assert is_top_currency(10) == True
+    assert is_top_currency(11) == False
+
+
 def test_get_pricing_data(mock_universe_file, mock_pricing_data_dir):
-    get_pricing_data(mock_universe_file, mock_pricing_data_dir)
+    """Making sure a file gets saved to the directory"""
+    df_pricing = get_pricing_data(mock_universe_file, mock_pricing_data_dir)
+    assert df_pricing.empty == False
+    assert "LoadedWhen" in df_pricing.columns
+    assert "IsTopCurrency" in df_pricing.columns
+
     pricing_data_dir_contents = list(mock_pricing_data_dir.glob("*.csv"))
     assert len(pricing_data_dir_contents) > 0
