@@ -177,6 +177,8 @@ def run_process(api_url: str, headers: dict, universe_file: Path, coins_to_track
         analyze_bitcoin_relationship(df_pricing, analysis_file)
     except requests.exceptions.HTTPError as e:
         print(f"API Request failed: {e}")
+    except KeyError:
+        print(f"KeyError raised. API schema may have changed. {e}")
     except ValueError as e:
         print(f"Bitcoin data not found in pricing call. {e}")
 
