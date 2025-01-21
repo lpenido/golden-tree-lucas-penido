@@ -203,6 +203,21 @@ def mock_df_universe():
     )
     yield test_df_universe
 
+@pytest.fixture
+def mock_coins_to_track_file():
+    test_coins_to_track = Path("test_coins_to_track.csv")
+    pd.DataFrame(
+        [
+            {
+                "Symbol": "BTC",
+            },
+            {
+                "Symbol": "ETH",
+            },
+        ]
+    ).to_csv(test_coins_to_track, index=False)
+    yield test_coins_to_track
+    test_coins_to_track.unlink(missing_ok=True)
 
 @pytest.fixture
 def mock_pricing_data_dir():
@@ -297,9 +312,9 @@ def test_get_coin_universe(mock_coin_universe_response, mock_universe_file):
     assert "ETH" in df["symbol"].values
 
 
-def test_get_coins_to_track():
+def test_get_coins_to_track(mock_coins_to_track_file):
     """Making sure the file to track coins exists and has at least BTC in it"""
-    coins_to_track = get_coins_to_track()
+    coins_to_track = get_coins_to_track(mock_coins_to_track_file)
     assert len(coins_to_track) > 0
     assert "BTC" in coins_to_track
 
