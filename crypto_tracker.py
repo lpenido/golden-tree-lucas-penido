@@ -80,16 +80,15 @@ def get_coins_to_track() -> list:
     """Helper function to get all the coin symbols of interest."""
     coins_to_track = pd.read_csv(COINS_TO_TRACK_FILE)
     coins_to_track = coins_to_track["Symbol"].tolist()
-    print(type(coins_to_track))
     return coins_to_track
 
 
-def get_pricing_data():
+def get_pricing_data(universe_file: Path, save_dir: Path):
     """Get and store pricing data for coins."""
     coin_ids = get_coins_to_track()
 
     process_runtime = datetime.now().isoformat()
-    df_universe = pd.read_csv(UNIVERSE_FILE)
+    df_universe = pd.read_csv(universe_file)
     df_pricing = df_universe[
         (df_universe["symbol"].isin(coin_ids)) | (df_universe["symbol"] == "BTC")
     ].copy()  # to make sure BTC is always included
@@ -99,10 +98,10 @@ def get_pricing_data():
     )
 
     df_pricing.to_csv(
-        PRICING_DATA_DIR / f"pricing_data__{process_runtime}.csv", index=False
+        save_dir / f"pricing_data__{process_runtime}.csv", index=False
     )
 
-    print(f"Coin pricing saved to {PRICING_DATA_DIR}")
+    print(f"Coin pricing saved to {save_dir}")
 
 
 # Part 3: You should use the data you’ve loaded to produce a csv that tracks the relationship
@@ -180,7 +179,7 @@ def calculate_average_difference() -> pd.DataFrame:
 def run_process():
     """A wrapper to call all steps in the tracking process"""
     get_coin_universe(UNIVERSE_FILE)
-    get_pricing_data()
+    get_pricing_data(UNIVERSE_FILE, PRICING_DATA_DIR)
     analyze_bitcoin_relationship()
     calculate_average_difference()
 
