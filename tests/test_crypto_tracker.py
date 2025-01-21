@@ -14,8 +14,7 @@ from crypto_tracker import (
     analyze_bitcoin_relationship,
     get_pricing_dfs,
     calculate_average_difference,
-    PRICING_DATA_DIR,
-    COINS_TO_TRACK_FILE,
+    run_process
 )
 
 
@@ -378,3 +377,13 @@ def test_no_pricing_files_calculate_average():
         assert False
     except ValueError:
         assert True
+
+def test_run_process(mock_universe_file, mock_coins_to_track_file, mock_pricing_data_dir, mock_analysis_save_path):
+    """Tests if process can run with variable, valid kwargs and not uncaught raise error"""
+    sandbox_api_url = "https://sandbox-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"
+    sandbox_headers = {
+        "Accepts": "application/json",
+        "X-CMC_PRO_API_KEY": "b54bcf4d-1bca-4e8e-9a24-22ff2c3d462c",
+    }
+    
+    run_process(sandbox_api_url, sandbox_headers, mock_universe_file, mock_coins_to_track_file, mock_pricing_data_dir, mock_analysis_save_path)

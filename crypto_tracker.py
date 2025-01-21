@@ -10,7 +10,7 @@ import pandas as pd
 
 def get_api_response(api_url: str, headers: dict) -> List[Dict]:
     """Helper function to seperate API call from API response processing"""
-    response = requests.get(API_URL, headers=headers)
+    response = requests.get(api_url, headers=headers)
     response.raise_for_status()
     data = response.json()["data"]
     return data
