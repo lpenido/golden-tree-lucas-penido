@@ -2,6 +2,7 @@ from datetime import datetime
 import json
 import os
 from pathlib import Path
+from typing import List
 
 import requests
 import pandas as pd
@@ -80,7 +81,7 @@ def get_coin_universe(save_path: Path) -> pd.DataFrame:
 #       a. When you load the data, add a “LoadedWhen” column with the current date time.
 #       b . When you load the data, add an “IsTopCurrency” column that is true when the
 #       cmc_rank is less than or equal to 10, false otherwise.
-def get_coins_to_track() -> list:
+def get_coins_to_track() -> List[str]:
     """Helper function to get all the coin symbols of interest."""
     coins_to_track = pd.read_csv(COINS_TO_TRACK_FILE)
     coins_to_track = coins_to_track["Symbol"].tolist()
@@ -154,14 +155,13 @@ def analyze_bitcoin_relationship(
 
 # Part 4: Write a python function to output the average 24H percent change vs bitcoin for each
 # currency over each run by parsing through the files you’ve generated.
-def get_pricing_files() -> list:
+def get_pricing_dfs(pricing_data_dir: Path) -> List[pd.DataFrame]:
     """Helper function in case sourcing for pricing data ever needs to change."""
-    return PRICING_DATA_DIR.glob("*.csv")
+    return pricing_data_dir.glob("*.csv")
 
 
-def calculate_average_difference() -> pd.DataFrame:
+def calculate_average_difference(dfs_pricing: List[pd.DataFrame]) -> pd.DataFrame:
     """Calculate the average 24H percent change difference vs. bitcoin."""
-    pricing_files = get_pricing_files()
     all_data = pd.concat((pd.read_csv(f) for f in pricing_files))
     bitcoin_data = all_data[all_data["symbol"] == "BTC"]
 
@@ -191,7 +191,9 @@ def run_process():
         df_universe = get_coin_universe(UNIVERSE_FILE)
         df_pricing = get_pricing_data(df_universe, PRICING_DATA_DIR)
         analyze_bitcoin_relationship(df_pricing, ANALYSIS_FILE)
-        calculate_average_difference()
+
+        dfs_pricing = get_pricing_dfs(PRICING_DATA_DIR)
+        calculate_average_difference(dfs_pricing)
     except requests.exceptions.HTTPError as e:
         print(f"Request failed: {e}")
 
