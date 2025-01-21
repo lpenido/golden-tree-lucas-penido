@@ -34,7 +34,7 @@ def save_csv(df: pd.DataFrame, save_path: Path):
 
 
 # Part 1: Store the entire universe of coins in a csv. This is for security data or coin level data.
-def get_coin_universe(save_path: Path):
+def get_coin_universe(save_path: Path) -> pd.DataFrame      :
     """Get the universe of coins from CoinMarketCap."""
     response = requests.get(API_URL, headers=HEADERS)
     response.raise_for_status()
@@ -71,6 +71,7 @@ def get_coin_universe(save_path: Path):
     df_universe = pd.DataFrame(universe)
     save_csv(df_universe, save_path)
     print(f"Coin universe saved to {save_path}")
+    return df_universe
 
 
 
@@ -89,7 +90,7 @@ def get_coins_to_track() -> list:
 def is_top_currency(cmc_rank: int) -> bool:
     return cmc_rank <= 10
 
-def get_pricing_data(universe_file: Path, save_dir: Path):
+def get_pricing_data(universe_file: Path, save_dir: Path) -> pd.DataFrame:
     """Get and store pricing data for coins."""
     coin_ids = get_coins_to_track()
 
@@ -104,6 +105,7 @@ def get_pricing_data(universe_file: Path, save_dir: Path):
     save_path = save_dir / f"pricing_data__{process_runtime}.csv"
     save_csv(df_pricing, save_path)
     print(f"Coin pricing saved to {save_dir}")
+    return df_pricing
 
 
 # Part 3: You should use the data you’ve loaded to produce a csv that tracks the relationship
@@ -120,7 +122,7 @@ def get_most_recent_file(dir_path: Path) -> Path:
     return dir_csvs[0]
 
 
-def analyze_bitcoin_relationship():
+def analyze_bitcoin_relationship() -> pd.DataFrame:
     """Analyze the relationship between bitcoin and other coins."""
     pricing_data = get_most_recent_file(PRICING_DATA_DIR)
     df_pricing = pd.read_csv(pricing_data)
@@ -143,6 +145,7 @@ def analyze_bitcoin_relationship():
     df_results = pd.DataFrame(results).sort_values(by="percent_change_diff")
     save_csv(df_results, ANALYSIS_FILE)
     print(f"Bitcoin relationship analysis saved to {ANALYSIS_FILE}")
+    return df_results
 
 
 # Part 4: Write a python function to output the average 24H percent change vs bitcoin for each
