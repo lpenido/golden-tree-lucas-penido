@@ -2,30 +2,18 @@ from datetime import datetime
 import json
 import os
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 
 import requests
 import pandas as pd
 
 
-# Config
-API_KEY = json.load(open("secrets.json", "r"))["api_key"]
-API_URL = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"
-HEADERS = {
-    "Accepts": "application/json",
-    "X-CMC_PRO_API_KEY": API_KEY,
-}
-
-# File paths
-ROOT_DIR = Path(__file__).parent
-COINS_TO_TRACK_FILE = ROOT_DIR / "coins_to_track.csv"
-UNIVERSE_FILE = "coin_universe.csv"
-PRICING_DATA_DIR = ROOT_DIR / "pricing_data/"
-ANALYSIS_FILE = "bitcoin_relationship.csv"
-
-
-# Making sure directories exist
-PRICING_DATA_DIR.mkdir(parents=True, exist_ok=True)
+def get_api_response(api_url: str, headers: dict) -> List[Dict]:
+    """Helper function to seperate API call from API response processing"""
+    response = requests.get(API_URL, headers=headers)
+    response.raise_for_status()
+    data = response.json()["data"]
+    return data
 
 
 def save_csv(df: pd.DataFrame, save_path: Path):
@@ -35,11 +23,10 @@ def save_csv(df: pd.DataFrame, save_path: Path):
 
 
 # Part 1: Store the entire universe of coins in a csv. This is for security data or coin level data.
-def get_coin_universe(save_path: Path) -> pd.DataFrame:
+def get_coin_universe(api_response: dict, save_path: Path) -> pd.DataFrame:
     """Get the universe of coins from CoinMarketCap."""
-    response = requests.get(API_URL, headers=HEADERS)
-    response.raise_for_status()
-    data = response.json()["data"]
+    # In production, keys for the universe can be handled by dictionary comprehension
+    # or a dataclass. If keys were implicitly defined, then there could be silent changing schemas.
     universe = [
         {
             "id": coin["id"],
@@ -62,7 +49,7 @@ def get_coin_universe(save_path: Path) -> pd.DataFrame:
             "self_reported_market_cap": coin["self_reported_market_cap"],
             "quote": coin["quote"],
         }
-        for coin in data
+        for coin in api_response
     ]
 
     # Adding percent_change_24h from quotes

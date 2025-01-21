@@ -21,8 +21,7 @@ from crypto_tracker import (
 
 @pytest.fixture
 def mock_coin_universe_response():
-    return {
-        "data": [
+    return [
             {
                 "id": 1,
                 "name": "Bitcoin",
@@ -175,7 +174,6 @@ def mock_coin_universe_response():
                 },
             },
         ]
-    }
 
 
 @pytest.fixture
@@ -286,19 +284,9 @@ def mock_analysis_save_path():
     test_analysis_save_path.unlink(missing_ok=True)
 
 
-def test_pricing_data_directory():
-    """The directory for pricing data should exist"""
-    assert PRICING_DATA_DIR.exists() == True
-
-
-@patch("crypto_tracker.requests.get")
-def test_get_coin_universe(mock_get, mock_coin_universe_response, mock_universe_file):
+def test_get_coin_universe(mock_coin_universe_response, mock_universe_file):
     """Testing the schema saves"""
-    mock_get.return_value = Mock(
-        status_code=200, json=lambda: mock_coin_universe_response
-    )
-
-    get_coin_universe(mock_universe_file)
+    get_coin_universe(mock_coin_universe_response, mock_universe_file)
 
     assert mock_universe_file.exists() == True
     df = pd.read_csv(mock_universe_file)
