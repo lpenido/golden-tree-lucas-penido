@@ -117,7 +117,7 @@ def analyze_bitcoin_relationship(
     results = []
     for _, row in df_pricing.iterrows():
         if row["symbol"] != "BTC":
-            diff = abs(row["percent_change_24h"] - bitcoin_change)
+            diff = row["percent_change_24h"] - bitcoin_change
             results.append(
                 {
                     "timestamp": datetime.now().isoformat(),
