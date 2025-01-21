@@ -157,12 +157,14 @@ def analyze_bitcoin_relationship(
 # currency over each run by parsing through the files you’ve generated.
 def get_pricing_dfs(pricing_data_dir: Path) -> List[pd.DataFrame]:
     """Helper function in case sourcing for pricing data ever needs to change."""
-    return pricing_data_dir.glob("*.csv")
+    pricing_df_paths = pricing_data_dir.glob("*.csv")
+    dfs_pricing = (pd.read_csv(f) for f in pricing_df_paths)
+    return dfs_pricing
 
 
 def calculate_average_difference(dfs_pricing: List[pd.DataFrame]) -> pd.DataFrame:
     """Calculate the average 24H percent change difference vs. bitcoin."""
-    all_data = pd.concat((pd.read_csv(f) for f in pricing_files))
+    all_data = pd.concat(dfs_pricing)
     bitcoin_data = all_data[all_data["symbol"] == "BTC"]
 
     bitcoin_change = bitcoin_data["percent_change_24h"].mean()
