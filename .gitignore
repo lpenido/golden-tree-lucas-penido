@@ -1,3 +1,11 @@
+# Secrets
+secrets.json
+
+# Generated files
+pricing_data/
+coin_universe.csv
+coins_to_track.csv
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
