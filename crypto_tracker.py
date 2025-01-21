@@ -121,6 +121,8 @@ def analyze_bitcoin_relationship(
 ) -> pd.DataFrame:
     """Analyze the relationship between bitcoin and other coins."""
     bitcoin_data = df_pricing[df_pricing["symbol"] == "BTC"]
+    if bitcoin_data.empty:
+        raise ValueError
 
     bitcoin_change = bitcoin_data.iloc[0]["percent_change_24h"]
     results = []
@@ -155,6 +157,8 @@ def calculate_average_difference(dfs_pricing: List[pd.DataFrame]) -> pd.DataFram
     """Calculate the average 24H percent change difference vs. bitcoin."""
     all_data = pd.concat(dfs_pricing)
     bitcoin_data = all_data[all_data["symbol"] == "BTC"]
+    if bitcoin_data.empty:
+        raise ValueError
 
     bitcoin_change = bitcoin_data["percent_change_24h"].mean()
     averages = []
@@ -182,11 +186,16 @@ def run_process():
         df_universe = get_coin_universe(UNIVERSE_FILE)
         df_pricing = get_pricing_data(df_universe, PRICING_DATA_DIR)
         analyze_bitcoin_relationship(df_pricing, ANALYSIS_FILE)
+    except requests.exceptions.HTTPError as e:
+        print(f"API Request failed: {e}")
+    except ValueError as e:
+        print(f"Bitcoin data not found in pricing call. {e}")
 
+    try:
         dfs_pricing = get_pricing_dfs(PRICING_DATA_DIR)
         calculate_average_difference(dfs_pricing)
-    except requests.exceptions.HTTPError as e:
-        print(f"Request failed: {e}")
+    except ValueError as e:
+        print(f"Bitcoin data not found across pricing files. {e}")
 
 
 if __name__ == "__main__":

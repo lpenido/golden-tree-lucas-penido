@@ -346,6 +346,13 @@ def test_analyze_bitcoin_relationship(
     assert round(df_results["percent_change_diff"].iloc[0], 2) == 1.88
     assert mock_analysis_save_path.exists() == True
 
+    no_bitcoin_data = mock_df_pricing[~(mock_df_pricing["symbol"] == "BTC")]
+    try:
+        analyze_bitcoin_relationship(no_bitcoin_data, mock_analysis_save_path)
+        assert False
+    except ValueError:
+        assert True
+        
 
 def test_get_pricing_dfs(mock_pricing_data_dir_populated):
     """Check if function can read csvs from directory into a list"""
@@ -357,3 +364,12 @@ def test_calculate_average_difference(mock_pricing_data_dir_populated):
     dfs_pricing = get_pricing_dfs(mock_pricing_data_dir_populated)
     df_average = calculate_average_difference(dfs_pricing)
     assert df_average["average_diff_vs_bitcoin"].iloc[0] == 15
+
+
+def test_no_pricing_files_calculate_average():
+    """If provided an empty list, the function should raise a ValueError"""
+    try:
+        calculate_average_difference([])
+        assert False
+    except ValueError:
+        assert True
