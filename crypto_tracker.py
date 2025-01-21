@@ -34,7 +34,7 @@ def save_csv(df: pd.DataFrame, save_path: Path):
 
 
 # Part 1: Store the entire universe of coins in a csv. This is for security data or coin level data.
-def get_coin_universe(save_path: Path) -> pd.DataFrame      :
+def get_coin_universe(save_path: Path) -> pd.DataFrame:
     """Get the universe of coins from CoinMarketCap."""
     response = requests.get(API_URL, headers=HEADERS)
     response.raise_for_status()
@@ -74,7 +74,6 @@ def get_coin_universe(save_path: Path) -> pd.DataFrame      :
     return df_universe
 
 
-
 # Part 2: Read coins_to_track.csv and get pricing data for each coin. Store the pricing data in a
 # csv. Each time your process runs a new csv should be generated and a timestamp
 # should be appended to the file name.
@@ -87,9 +86,11 @@ def get_coins_to_track() -> list:
     coins_to_track = coins_to_track["Symbol"].tolist()
     return coins_to_track
 
+
 def is_top_currency(cmc_rank: int) -> bool:
     """Helper function to rank top currencies to track."""
     return cmc_rank <= 10
+
 
 def get_pricing_data(df_universe: pd.DataFrame, save_dir: Path) -> pd.DataFrame:
     """Get and store pricing data for coins."""
@@ -124,7 +125,10 @@ def get_most_recent_file(dir_path: Path) -> Path:
     except KeyError:
         raise KeyError("No pricing file found")
 
-def analyze_bitcoin_relationship(df_pricing: pd.DataFrame, save_path: Path) -> pd.DataFrame:
+
+def analyze_bitcoin_relationship(
+    df_pricing: pd.DataFrame, save_path: Path
+) -> pd.DataFrame:
     """Analyze the relationship between bitcoin and other coins."""
     bitcoin_data = df_pricing[df_pricing["symbol"] == "BTC"]
 
