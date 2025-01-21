@@ -91,12 +91,11 @@ def is_top_currency(cmc_rank: int) -> bool:
     """Helper function to rank top currencies to track."""
     return cmc_rank <= 10
 
-def get_pricing_data(universe_file: Path, save_dir: Path) -> pd.DataFrame:
+def get_pricing_data(df_universe: pd.DataFrame, save_dir: Path) -> pd.DataFrame:
     """Get and store pricing data for coins."""
     coin_ids = get_coins_to_track()
-
     process_runtime = datetime.now().isoformat()
-    df_universe = pd.read_csv(universe_file)
+
     df_pricing = df_universe[
         (df_universe["symbol"].isin(coin_ids)) | (df_universe["symbol"] == "BTC")
     ].copy()  # to make sure BTC is always included
@@ -120,8 +119,10 @@ def get_most_recent_file(dir_path: Path) -> Path:
     dir_csvs = sorted(
         dir_path.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True
     )  # reverse = True is DESC
-    return dir_csvs[0]
-
+    try:
+        return dir_csvs[0]
+    except KeyError:
+        raise KeyError("No pricing file found")
 
 def analyze_bitcoin_relationship(df_pricing: pd.DataFrame, save_path: Path) -> pd.DataFrame:
     """Analyze the relationship between bitcoin and other coins."""
@@ -183,8 +184,8 @@ def calculate_average_difference() -> pd.DataFrame:
 def run_process():
     """A wrapper to call all steps in the tracking process"""
     try:
-        get_coin_universe(UNIVERSE_FILE)
-        df_pricing = get_pricing_data(UNIVERSE_FILE, PRICING_DATA_DIR)
+        df_universe = get_coin_universe(UNIVERSE_FILE)
+        df_pricing = get_pricing_data(df_universe, PRICING_DATA_DIR)
         analyze_bitcoin_relationship(df_pricing, ANALYSIS_FILE)
         calculate_average_difference()
     except requests.exceptions.HTTPError as e:
