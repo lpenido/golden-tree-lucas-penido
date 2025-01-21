@@ -142,8 +142,8 @@ def analyze_bitcoin_relationship(df_pricing: pd.DataFrame, save_path: Path) -> p
             )
 
     df_results = pd.DataFrame(results).sort_values(by="percent_change_diff")
-    save_csv(df_results, ANALYSIS_FILE)
-    print(f"Bitcoin relationship analysis saved to {ANALYSIS_FILE}")
+    save_csv(df_results, save_path)
+    print(f"Bitcoin relationship analysis saved to {save_path}")
     return df_results
 
 
