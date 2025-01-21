@@ -68,9 +68,11 @@ def get_coin_universe(api_response: dict, save_path: Path) -> pd.DataFrame:
 #       a. When you load the data, add a “LoadedWhen” column with the current date time.
 #       b . When you load the data, add an “IsTopCurrency” column that is true when the
 #       cmc_rank is less than or equal to 10, false otherwise.
-def get_coins_to_track() -> List[str]:
+def get_coins_to_track(coins_to_track_path: Path) -> List[str]:
     """Helper function to get all the coin symbols of interest."""
-    coins_to_track = pd.read_csv(COINS_TO_TRACK_FILE)
+    # This read could be replaced with a "safe_read" helper function to get expected
+    # and would be appropriate for larger workloads where failures during the process should be logged
+    coins_to_track = pd.read_csv(coins_to_track_path)
     coins_to_track = coins_to_track["Symbol"].tolist()
     return coins_to_track
 
@@ -80,9 +82,9 @@ def is_top_currency(cmc_rank: int) -> bool:
     return cmc_rank <= 10
 
 
-def get_pricing_data(df_universe: pd.DataFrame, save_dir: Path) -> pd.DataFrame:
+def get_pricing_data(coins_to_track_path: Path, df_universe: pd.DataFrame, save_dir: Path) -> pd.DataFrame:
     """Get and store pricing data for coins."""
-    coin_ids = get_coins_to_track()
+    coin_ids = get_coins_to_track(coins_to_track_path)
     process_runtime = datetime.now().isoformat()
 
     df_pricing = df_universe[
@@ -136,7 +138,7 @@ def analyze_bitcoin_relationship(
 def get_pricing_dfs(pricing_data_dir: Path) -> List[pd.DataFrame]:
     """Helper function in case sourcing for pricing data ever needs to change."""
     pricing_df_paths = pricing_data_dir.glob("*.csv")
-    dfs_pricing = [pd.read_csv(f) for f in pricing_df_paths]
+    dfs_pricing = [pd.read_csv(f) for f in pricing_df_paths] # This read could be replaced with a "safe_read" helper function to check for propagating nans
     return dfs_pricing
 
 
