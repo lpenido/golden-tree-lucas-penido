@@ -168,23 +168,44 @@ def calculate_average_difference(dfs_pricing: List[pd.DataFrame]) -> pd.DataFram
     return df_averages
 
 
-def run_process():
+def run_process(api_url: str, headers: dict, universe_file: Path, coins_to_track_path: Path, pricing_data_dir: Path, analysis_file: Path):
     """A wrapper to call all steps in the tracking process"""
     try:
-        df_universe = get_coin_universe(UNIVERSE_FILE)
-        df_pricing = get_pricing_data(df_universe, PRICING_DATA_DIR)
-        analyze_bitcoin_relationship(df_pricing, ANALYSIS_FILE)
+        api_response = get_api_response(api_url, headers)
+        df_universe = get_coin_universe(api_response, universe_file)
+        df_pricing = get_pricing_data(coins_to_track_path, df_universe, pricing_data_dir)
+        analyze_bitcoin_relationship(df_pricing, analysis_file)
     except requests.exceptions.HTTPError as e:
         print(f"API Request failed: {e}")
     except ValueError as e:
         print(f"Bitcoin data not found in pricing call. {e}")
 
     try:
-        dfs_pricing = get_pricing_dfs(PRICING_DATA_DIR)
+        dfs_pricing = get_pricing_dfs(pricing_data_dir)
         calculate_average_difference(dfs_pricing)
     except ValueError as e:
         print(f"Bitcoin data not found across pricing files. {e}")
 
 
 if __name__ == "__main__":
-    run_process()
+    # Keeping globals below main header and API key out of imports
+    # Config
+    API_KEY = json.load(open("secrets.json", "r"))["api_key"]
+    API_URL = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"
+    HEADERS = {
+        "Accepts": "application/json",
+        "X-CMC_PRO_API_KEY": API_KEY,
+    }
+
+    # File paths
+    ROOT_DIR = Path(__file__).parent
+    COINS_TO_TRACK_FILE = ROOT_DIR / "coins_to_track.csv"
+    UNIVERSE_FILE = "coin_universe.csv"
+    PRICING_DATA_DIR = ROOT_DIR / "pricing_data/"
+    ANALYSIS_FILE = "bitcoin_relationship.csv"
+
+
+    # Making sure directories exist
+    PRICING_DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    run_process(API_URL, HEADERS, UNIVERSE_FILE, COINS_TO_TRACK_FILE, PRICING_DATA_DIR, ANALYSIS_FILE)
