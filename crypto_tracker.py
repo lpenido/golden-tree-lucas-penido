@@ -123,10 +123,8 @@ def get_most_recent_file(dir_path: Path) -> Path:
     return dir_csvs[0]
 
 
-def analyze_bitcoin_relationship() -> pd.DataFrame:
+def analyze_bitcoin_relationship(df_pricing: pd.DataFrame, save_path: Path) -> pd.DataFrame:
     """Analyze the relationship between bitcoin and other coins."""
-    pricing_data = get_most_recent_file(PRICING_DATA_DIR)
-    df_pricing = pd.read_csv(pricing_data)
     bitcoin_data = df_pricing[df_pricing["symbol"] == "BTC"]
 
     bitcoin_change = bitcoin_data.iloc[0]["percent_change_24h"]
@@ -186,8 +184,8 @@ def run_process():
     """A wrapper to call all steps in the tracking process"""
     try:
         get_coin_universe(UNIVERSE_FILE)
-        get_pricing_data(UNIVERSE_FILE, PRICING_DATA_DIR)
-        analyze_bitcoin_relationship()
+        df_pricing = get_pricing_data(UNIVERSE_FILE, PRICING_DATA_DIR)
+        analyze_bitcoin_relationship(df_pricing, ANALYSIS_FILE)
         calculate_average_difference()
     except requests.exceptions.HTTPError as e:
         print(f"Request failed: {e}")
