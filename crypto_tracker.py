@@ -27,6 +27,12 @@ ANALYSIS_FILE = "bitcoin_relationship.csv"
 PRICING_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
+def save_csv(df: pd.DataFrame, save_path: Path):
+    """Helper function to standardize saving mechanism for tables"""
+    df.to_csv(save_path, index=False)
+    print(f"File saved to {save_path}")
+
+
 # Part 1: Store the entire universe of coins in a csv. This is for security data or coin level data.
 def get_coin_universe(save_path: Path):
     """Get the universe of coins from CoinMarketCap."""
@@ -63,7 +69,7 @@ def get_coin_universe(save_path: Path):
         coin["percent_change_24h"] = coin["quote"]["USD"]["percent_change_24h"]
 
     df_universe = pd.DataFrame(universe)
-    df_universe.to_csv(save_path, index=False)
+    save_csv(df_universe, save_path)
     print(f"Coin universe saved to {save_path}")
 
 
@@ -95,10 +101,8 @@ def get_pricing_data(universe_file: Path, save_dir: Path):
     df_pricing["LoadedWhen"] = process_runtime
     df_pricing["IsTopCurrency"] = df_pricing["cmc_rank"].map(is_top_currency)
 
-    df_pricing.to_csv(
-        save_dir / f"pricing_data__{process_runtime}.csv", index=False
-    )
-
+    save_path = save_dir / f"pricing_data__{process_runtime}.csv"
+    save_csv(df_pricing, save_path)
     print(f"Coin pricing saved to {save_dir}")
 
 
@@ -137,7 +141,7 @@ def analyze_bitcoin_relationship():
             )
 
     df_results = pd.DataFrame(results).sort_values(by="percent_change_diff")
-    df_results.to_csv(ANALYSIS_FILE, index=False)
+    save_csv(df_results, ANALYSIS_FILE)
     print(f"Bitcoin relationship analysis saved to {ANALYSIS_FILE}")
 
 
