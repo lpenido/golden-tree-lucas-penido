@@ -149,7 +149,7 @@ def analyze_bitcoin_relationship(
 def get_pricing_dfs(pricing_data_dir: Path) -> List[pd.DataFrame]:
     """Helper function in case sourcing for pricing data ever needs to change."""
     pricing_df_paths = pricing_data_dir.glob("*.csv")
-    dfs_pricing = (pd.read_csv(f) for f in pricing_df_paths)
+    dfs_pricing = [pd.read_csv(f) for f in pricing_df_paths]
     return dfs_pricing
 
 
@@ -174,7 +174,6 @@ def calculate_average_difference(dfs_pricing: List[pd.DataFrame]) -> pd.DataFram
                 }
             )
 
-    # Cutting down output to only tracked coins
     df_averages = pd.DataFrame(averages)
     print(df_averages)
     return df_averages

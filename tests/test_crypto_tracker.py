@@ -253,6 +253,7 @@ def mock_pricing_data_dir_populated():
     yield test_pricing_data_dir
     shutil.rmtree(test_pricing_data_dir)
 
+
 @pytest.fixture
 def mock_df_pricing():
     test_df_pricing = pd.DataFrame(
@@ -340,7 +341,7 @@ def test_analyze_bitcoin_relationship(
 ):
     """Making sure BTC isn't reported as a benchmark against itself, that analysis column exists, analysis is correct, and file is made"""
     df_results = analyze_bitcoin_relationship(mock_df_pricing, mock_analysis_save_path)
-    
+
     assert "BTC" not in df_results["symbol"].unique()
     assert "percent_change_diff" in df_results.columns
     assert round(df_results["percent_change_diff"].iloc[0], 2) == 1.88
@@ -352,12 +353,13 @@ def test_analyze_bitcoin_relationship(
         assert False
     except ValueError:
         assert True
-        
+
 
 def test_get_pricing_dfs(mock_pricing_data_dir_populated):
     """Check if function can read csvs from directory into a list"""
     dfs = get_pricing_dfs(mock_pricing_data_dir_populated)
     assert len(dfs) == 2
+
 
 def test_calculate_average_difference(mock_pricing_data_dir_populated):
     """Checking if function will take list, return df, and do the proper math"""
