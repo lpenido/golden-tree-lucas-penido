@@ -116,17 +116,6 @@ def get_pricing_data(df_universe: pd.DataFrame, save_dir: Path) -> pd.DataFrame:
 #       b. The difference in 24H percent change between bitcoin and the currency we’re
 #          evaluating.
 #       c. Sorted from smallest difference to largest.
-def get_most_recent_file(dir_path: Path) -> Path:
-    """Helper function to get most recent csv in pricing dir."""
-    dir_csvs = sorted(
-        dir_path.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True
-    )  # reverse = True is DESC
-    try:
-        return dir_csvs[0]
-    except KeyError:
-        raise KeyError("No pricing file found")
-
-
 def analyze_bitcoin_relationship(
     df_pricing: pd.DataFrame, save_path: Path
 ) -> pd.DataFrame:
