@@ -7,6 +7,7 @@ import pytest
 import pandas as pd
 
 from crypto_tracker import (
+    safe_save_file_name,
     get_coin_universe,
     get_coins_to_track,
     is_top_currency,
@@ -297,6 +298,17 @@ def mock_analysis_save_path():
     yield test_analysis_save_path
     test_analysis_save_path.unlink(missing_ok=True)
 
+
+def test_safe_save_file_name():
+    """Testing to make sure there are no prohibitted characters in file names"""
+    prohibitted_windows_characters = r'\/:*?"<>|'
+    safe_name = safe_save_file_name("pricing_data__2025-01-20T16:00:48.458138.csv")
+    assert safe_name == "pricing_data__2025-01-20T16_00_48.458138.csv"
+    assert not any(char in safe_name for char in prohibitted_windows_characters)
+    
+    safe_name2 = safe_save_file_name("pricing_data__2025_01_22T15_55_01_087317.csv")
+    assert safe_name2 == "pricing_data__2025_01_22T15_55_01_087317.csv"
+    assert not any(char in safe_name2 for char in prohibitted_windows_characters)
 
 def test_get_coin_universe(mock_coin_universe_response, mock_universe_file):
     """Testing the schema saves"""

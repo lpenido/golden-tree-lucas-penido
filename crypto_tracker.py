@@ -16,6 +16,19 @@ def get_api_response(api_url: str, headers: dict) -> List[Dict]:
     return data
 
 
+def safe_save_file_name(file_name: str) -> str:
+    """Helper function to ensure safe file names on cross platform saves."""
+    prohibitted_windows_characters = r'\/:*?"<>|'
+    if any(char in file_name for char in prohibitted_windows_characters):
+        safe_save_name = file_name
+        for char in prohibitted_windows_characters:
+            if char in safe_save_name:
+                safe_save_name = safe_save_name.replace(char, "_")
+        return safe_save_name
+    else:
+        return file_name
+
+
 def save_csv(df: pd.DataFrame, save_path: Path):
     """Helper function to standardize saving mechanism for tables"""
     df.to_csv(save_path, index=False)
@@ -85,15 +98,16 @@ def is_top_currency(cmc_rank: int) -> bool:
 def get_pricing_data(coins_to_track_path: Path, df_universe: pd.DataFrame, save_dir: Path) -> pd.DataFrame:
     """Get and store pricing data for coins."""
     coin_ids = get_coins_to_track(coins_to_track_path)
-    process_runtime = datetime.now().isoformat()
+    process_runtime = datetime.now()
+    process_runtime_file_safe = process_runtime.strftime("%Y_%m_%dT%H_%M_%S_%f") # to make a safe timestamp for file name
 
     df_pricing = df_universe[
         (df_universe["symbol"].isin(coin_ids)) | (df_universe["symbol"] == "BTC")
     ].copy()  # to make sure BTC is always included
-    df_pricing["LoadedWhen"] = process_runtime
+    df_pricing["LoadedWhen"] = process_runtime.isoformat()
     df_pricing["IsTopCurrency"] = df_pricing["cmc_rank"].map(is_top_currency)
 
-    save_path = save_dir / f"pricing_data__{process_runtime}.csv"
+    save_path = save_dir / safe_save_file_name(f"pricing_data__{process_runtime_file_safe}.csv")
     save_csv(df_pricing, save_path)
     print(f"Coin pricing saved to {save_dir}")
     return df_pricing
@@ -181,6 +195,8 @@ def run_process(api_url: str, headers: dict, universe_file: Path, coins_to_track
         print(f"KeyError raised. API schema may have changed. {e}")
     except ValueError as e:
         print(f"Bitcoin data not found in pricing call. {e}")
+    except OSError as e:
+        print(f"There was an issue saving the file. {e}")
 
     try:
         dfs_pricing = get_pricing_dfs(pricing_data_dir)
@@ -202,9 +218,9 @@ if __name__ == "__main__":
     # File paths
     ROOT_DIR = Path(__file__).parent
     COINS_TO_TRACK_FILE = ROOT_DIR / "coins_to_track.csv"
-    UNIVERSE_FILE = "coin_universe.csv"
+    UNIVERSE_FILE = ROOT_DIR / "coin_universe.csv"
     PRICING_DATA_DIR = ROOT_DIR / "pricing_data/"
-    ANALYSIS_FILE = "bitcoin_relationship.csv"
+    ANALYSIS_FILE = ROOT_DIR / "bitcoin_relationship.csv"
 
 
     # Making sure directories exist
